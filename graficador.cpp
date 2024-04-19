@@ -3,23 +3,41 @@
 #include <windows.h>
 #include <cmath>
 #include <vector>
+#include <limits>
 
-// Librerias para el manejo de datos y arreglos, y verificación de pantalla.
+
 using namespace std;
 
-
-// inicializamos un objeto que contendra las posiciones
 struct Cuadrado {
     int x;
     int y;
     int lado;
 };
 
+struct Circulo {
+    int x;
+    int y;
+    int radio;
+};
 
-// nos ayudamos de vector para utilizar el objeto y almacenar cuadrados
+struct Triangulo {
+    int x;
+    int y;
+    int base;
+};
+
+bool fn_mode = false;
+
 vector<Cuadrado> cuadrados;
+vector<Circulo> circulos;
+vector<Triangulo> triangulos;
 
-// configuramos coordenadas
+
+void toggleFnMode() {
+    fn_mode = !fn_mode;
+}
+
+int width, height; // Declarar width y height como variables globales
 
 void gotoxy(int x, int y) {
     COORD coord;
@@ -28,9 +46,7 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
-//funcion para dibujar los cuadrados
-
-void dibujarCuadrado(int x, int y, int lado, int width, int height, char caracter) {
+void dibujarCuadrado(int x, int y, int lado, char caracter) {
     for (int i = 0; i < lado; ++i) {
         for (int j = 0; j < lado; ++j) {
             if (i == 0 || i == lado - 1 || j == 0 || j == lado - 1) {
@@ -44,83 +60,185 @@ void dibujarCuadrado(int x, int y, int lado, int width, int height, char caracte
     }
 }
 
-// funcion para insertar el cuadrado en el vector
-void insertarCuadrado(int x, int y, int width, int height) {
+bool validarValor(int valor) {
+    if (cin.fail() || valor <= 0) {
+        cin.clear(); // Limpiar el estado de error
+        cin.ignore(numeric_limits<streamsize>::max(), '\n'); // Descartar la entrada inválida del usuario
+        cout << "Por favor, ingrese un número entero positivo válido." << endl;
+        return false; // Retorna false para indicar que el valor es incorrecto
+    }
+    return true; // Retorna true si el valor es válido
+}
+
+
+void dibujarCirculo(int x, int y, int radio, char caracter) {
+    for (int i = 0; i <= radio * 2; ++i) {
+        for (int j = 0; j <= radio * 2; ++j) {
+            int dx = j - radio;
+            int dy = i - radio;
+            float distance = sqrt(dx * dx + dy * dy);
+            if (abs(distance - radio) < 0.5) {
+                int px = (x + j) % width;
+                int py = (y + i) % height;
+
+                gotoxy(px, py);
+                cout << caracter;
+            }
+        }
+    }
+}
+
+void dibujarTriangulo(int x, int y, int base, char caracter) {
+    // Calcular la altura del triángulo equilátero (aproximadamente sqrt(3)/2 * base)
+    int altura = int(0.866 * base); // Aproximación de sqrt(3)/2 * base
+
+    // Dibujar el lado izquierdo del triángulo
+    for (int i = 0; i <= altura; ++i) {
+        gotoxy(x - i, y + i);
+        cout << "*";
+    }
+
+    // Dibujar el lado derecho del triángulo
+    for (int i = 0; i <= altura; ++i) {
+        gotoxy(x + i, y + i);
+        cout << "*";
+    }
+
+    // Dibujar la base del triángulo
+    for (int i = 0; i < base; ++i) {
+        gotoxy(x - altura + i, y + altura);
+        cout << caracter;
+    }
+}
+
+void dibujarFiguras() {
+    if (!cuadrados.empty()) {
+        for (const auto& figura : cuadrados) {
+            dibujarCuadrado(figura.x, figura.y, figura.lado, '*');
+        }
+    }
+
+        if (!circulos.empty()) {
+        for (const auto& figura : circulos) {
+            dibujarCirculo(figura.x, figura.y, figura.radio, '*');
+        }
+    }
+
+    if (!triangulos.empty()) {
+        for (const auto& figura : triangulos) {
+            dibujarTriangulo(figura.x, figura.y, figura.base, '*');
+        }
+    }
+}
+
+
+void insertarCirculo(int x, int y){
+ int radio;
+ x:
+    cout << "R circulo: ";
+    cin >> radio;
+    if (!validarValor(radio)) {
+           cout << "El valor ingresado es incorrecto";
+           goto x;
+    }
+
+    Circulo nueva_figura = {x, y, radio};
+    circulos.push_back(nueva_figura);
+    system("cls");
+    dibujarFiguras();
+}
+
+void insertarTriangulo(int x, int y){
+ int base;
+ y:
+    cout << "B Triangulo: ";
+    cin >> base;
+    if (!validarValor(base)) {
+           cout << "El valor ingresado es incorrecto";
+           goto y;
+    }
+
+    Triangulo nueva_figura = {x, y, base};
+    triangulos.push_back(nueva_figura);
+    system("cls");
+    dibujarFiguras();
+}
+
+
+
+void insertarCuadrado(int x, int y) {
     int lado;
-    cout << "in Base:";
+    cout << "Tamaño del lado:";
     cin >> lado;
     Cuadrado nuevo_cuadrado = {x, y, lado};
     cuadrados.push_back(nuevo_cuadrado);
     system("cls");
-    char caracter = '*';
+    dibujarFiguras();
+}
 
-    if (x < 0) x = 0;
-    if (y < 0) y = 0;
-
-
- // for que recorre la construcción del Vector
-    for (const auto& cuadrado : cuadrados) {
-        dibujarCuadrado(cuadrado.x, cuadrado.y, cuadrado.lado, width, height, caracter);
+void handleFunctionKey(int key, int x, int y) {
+    switch (key) {
+        case 59: // F1
+            insertarCuadrado(x, y);
+            break;
+        case 60: // F2
+            insertarCirculo(x, y);
+            break;
+        case 61: // F3
+            insertarTriangulo(x, y);
+            break;
+        case 27: // Escape
+            system("cls");
+            cuadrados.clear();
+            circulos.clear();
+            gotoxy(x, y);
+            cout << "Limpiando Pantalla" << endl;
+            Sleep(2000);
+            system("cls");
+            break;
     }
 }
 
 int main() {
-
-    //inicialización
     CONSOLE_SCREEN_BUFFER_INFO info;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
 
-    //obtengo tamaños de la cmd creada en cada maquina para determinar un tamaño en pantalla
-    int anchoCMD = info.dwSize.X;
-    int altoCMD = info.dwSize.Y;
-    //obtengo los valores y los almaceno en ancho y alto global
-    const int width = anchoCMD;
-    const int height = altoCMD;
+    width = info.dwSize.X;
+    height = info.dwSize.Y;
 
-    //determino una posición X y Y inicial al centro diviendo el valor obtenido por dos.
     int x = width / 2;
     int y = height / 2;
-    // llave para extraer las funciones
     char key;
 
-    // limpio pantalla
     system("cls");
-    //llevo el cursor a la posición establecida
     gotoxy(x, y);
-    //pintar cursor
     cout << "";
-     //incia el ciclo para leer los valores del usuario
-    while (true) {
-            // se establece el metodo kbhit para verificar si se presiona la tecla (este metodo no bloquea la ejecución del programa)
-        if (_kbhit()) {
-            // obtenemos el valor con _getch() y se almacena en Key
-            key = _getch();
-             //leemos el valor y entramos en el case correspondiente, ya sea para moverse o dibujar según los valores.
-            switch (key) {
-                case 'w':
-                    y = (y - 1 + height) % height;
-                    break;
-                case 's':
-                    y = (y + 1) % height;
-                    break;
-                case 'a':
-                    x = (x - 1 + width) % width;
-                    break;
-                case 'd':
-                    x = (x + 1) % width;
-                    break;
-                case '1':
-                    // creación de cuadrado, nos vamos a la inserción y ejecución de bucle.
-                    insertarCuadrado(x, y, width, height);
-                    break;
+        while (true) {
+                if (_kbhit()) {
+                    key = _getch();
+                    if (key == 0) {
+                        // Se recibió un código de tecla extendido (0)
+                        toggleFnMode();
+                    } else {
+                        handleFunctionKey(key, x, y);
+                        switch (key) {
+                            case 'w':
+                                y = (y - 1 + height) % height;
+                                break;
+                            case 's':
+                                y = (y + 1) % height;
+                                break;
+                            case 'a':
+                                x = (x - 1 + width) % width;
+                                break;
+                            case 'd':
+                                x = (x + 1) % width;
+                                break;
+                        }
+                        gotoxy(x, y);
+                        cout << "";
+                    }
+                }
+                Sleep(100);
             }
-            //nos vamos al valor ejecutado con el cursor en su posición
-            gotoxy(x, y);
-            cout << "";
-        }
-
-        Sleep(100);
-    }
-
-    return 0;
 }
