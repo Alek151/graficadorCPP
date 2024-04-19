@@ -10,23 +10,24 @@ void gotoxy(int x, int y) {
 }
 
 int main() {
+   //Se lee la entrada
   CONSOLE_SCREEN_BUFFER_INFO info;
   GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
-
+  //Se obtiene el alto y ancho del Cmd que se anb
   int anchoCMD = info.dwSize.X;
   int altoCMD = info.dwSize.Y;
     const int width = anchoCMD; // Ancho de la pantalla
     const int height = altoCMD; // Alto de la pantalla
-    int x = width / 2; // Posiciï¿½n inicial X
-    int y = height / 2; // Posiciï¿½n inicial Y
+    int x = width / 2; // Posición inicial X
+    int y = height / 2; // Posición inicial Y
     char key;
 
     // Limpiar la pantalla
     system("cls");
 
-    // Mostrar el mensaje inicial en la posiciï¿½n inicial
+    // Mostrar el mensaje inicial en la posición inicial
     gotoxy(x, y);
-    std::cout << "<";
+    std::cout << "";
 
     // Bucle principal
     while (true) {
@@ -35,29 +36,27 @@ int main() {
             // Obtener la tecla presionada
             key = _getch();
 
-            // Mover el cursor segï¿½n la tecla presionada
+            // Mover el cursor según la tecla presionada
             switch (key) {
                 case 'w':
-                    y = (y - 1 + height) % height; // Movimiento hacia arriba (con lï¿½mite circular)
+                    y = (y - 1 + height) % height; // Movimiento hacia arriba (con límite circular)
                     break;
                 case 's':
-                    y = (y + 1) % height; // Movimiento hacia abajo (con lï¿½mite circular)
+                    y = (y + 1) % height; // Movimiento hacia abajo (con límite circular)
                     break;
                 case 'a':
-                    x = (x - 1 + width) % width; // Movimiento hacia la izquierda (con lï¿½mite circular)
+                    x = (x - 1 + width) % width; // Movimiento hacia la izquierda (con límite circular)
                     break;
                 case 'd':
-                    x = (x + 1) % width; // Movimiento hacia la derecha (con lï¿½mite circular)
+                    x = (x + 1) % width; // Movimiento hacia la derecha (con límite circular)
                     break;
             }
 
-            // Limpiar la pantalla y mover el cursor a la nueva posiciï¿½n
-            system("cls");
             gotoxy(x, y);
-            std::cout << "<";
+            std::cout << "";
         }
 
-        // Esperar un breve periodo de tiempo antes de la prï¿½xima iteraciï¿½n
+        // Esperar un breve periodo de tiempo antes de la próxima iteración
         Sleep(100);
     }
 
