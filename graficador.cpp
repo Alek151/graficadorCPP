@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 // se definen los colores a utilizar, no pude utilizar conio para esto
 #define RESET   "\033[0m"
 #define RED     "\033[31m"
@@ -16,6 +15,7 @@ using namespace std;
 #define YELLOW  "\033[33m"
 #define WHITE   "\033[37m"
 
+string tipoFigura;
 
 // se definen las clases de las figuras
 struct Cuadrado {
@@ -39,6 +39,14 @@ struct Triangulo {
     string color;
 };
 
+struct Rectangulo {
+    int x;
+    int y;
+    int base;
+    int altura;
+    string color;
+};
+
 // se fija un color inicial
 string color_fijo = WHITE;
 
@@ -46,6 +54,7 @@ string color_fijo = WHITE;
 vector<Cuadrado> cuadrados;
 vector<Circulo> circulos;
 vector<Triangulo> triangulos;
+vector<Rectangulo> rectangulos;
 
 
 // se implementa funcion para dispositivos que tengan la tecla fn
@@ -66,6 +75,32 @@ void gotoxy(int x, int y) {
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
 
+// funcion para mostrar un menú
+void mostrarMenu(){
+    CONSOLE_SCREEN_BUFFER_INFO info;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
+
+    width = info.dwSize.X;
+    height = info.dwSize.Y;
+
+    int tx = 11;
+    int ty = 1;
+    gotoxy(tx, ty);
+    cout << GREEN << "F1: Cuadrado | F2: Circulo | F3: Triangulo | ESC: Borrar | F5: Rojo | F6: Verde | F7: Amarillo | F8: Blanco";
+}
+
+// funcion para vlidar valores incorrectos
+bool validarValor(int valor) {
+    if (cin.fail() || valor <= 0) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Por favor, ingrese un numero entero positivo v�lido." << endl;
+        return false;
+    }
+    return true;
+}
+
+
 // se inicializan funciones para dibujar las figuras
 void dibujarCuadrado(int x, int y, int lado, const string& color) {
     for (int i = 0; i < lado; i++) {
@@ -74,28 +109,11 @@ void dibujarCuadrado(int x, int y, int lado, const string& color) {
                 int px = (x + j * 2) % width;
                 int py = (y + i) % height;
                 gotoxy(px, py);
-                cout << color << "* ";
-            } else {
-                int px = (x + j * 2) % width;
-                int py = (y + i) % height;
-                gotoxy(px, py);
-                cout << color << "  ";
+                cout << color << "*";
             }
         }
         cout << endl;
     }
-}
-
-
-// funcion para vlidar valores incorrectos
-bool validarValor(int valor) {
-    if (cin.fail() || valor <= 0) {
-        cin.clear();
-        cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Por favor, ingrese un n�mero entero positivo v�lido." << endl;
-        return false;
-    }
-    return true;
 }
 
 void dibujarCirculo(int x, int y, int radio, const string& color) {
@@ -121,18 +139,37 @@ void dibujarTriangulo(int x, int y, int base, const string& color) {
     for (int i = 0; i <= altura; ++i) {
         gotoxy(x - i, y + i);
         cout << color << "*";
-    }
-
-    for (int i = 0; i <= altura; ++i) {
         gotoxy(x + i, y + i);
         cout << color << "*";
     }
 
     for (int i = 0; i < base; ++i) {
-        gotoxy(x - altura + i, y + altura);
-        cout << color << "*";
+        int validacion = base % 2;
+        if(validacion == 1){ // Verificar si la base es impar
+            gotoxy(x - altura + i * 2, y + altura);
+            cout << color << "*";
+        } else { // Si la base es par
+            if (i % 2 == 0 || i == base + 1) { // Imprimir solo cada segundo asterisco y el último
+                gotoxy(x - altura + i, y + altura);
+                cout << color << "*";
+            }
+        }
     }
 }
+
+void dibujarContornoRectangulo(int x, int y, int base, int altura, const string& color) {
+    for (int i = 0; i < altura; ++i) {
+        for (int j = 0; j < base; ++j) {
+            // Dibuja solo el contorno: superior, inferior, izquierdo, derecho
+            if (i == 0 || i == altura - 1 || j == 0 || j == base - 1) {
+                gotoxy(x + j, y + i);
+                std::cout << color << "*";
+            }
+        }
+    }
+}
+
+
 
 void dibujarFiguras() {
     for (const auto& figura : cuadrados) {
@@ -146,82 +183,102 @@ void dibujarFiguras() {
     for (const auto& figura : triangulos) {
         dibujarTriangulo(figura.x, figura.y, figura.base, figura.color);
     }
+
+    for (const auto& figura : rectangulos) {
+        dibujarContornoRectangulo(figura.x, figura.y, figura.base, figura.altura, figura.color);
+    }
+        mostrarMenu();
 }
 
 // funcion para insertar figuras en los vectores
 
-void insertarCuadrado(int x, int y) {
-    string color = color_fijo;
-    int lado;
-    cout << "Tama�o del lado:";
-    cin >> lado;
-    if (!validarValor(lado)) {
-        cout << "El valor ingresado es incorrecto";
-        return;
+void insertarPosFigura(int x, int y, string tipoFigura){
+
+    if(tipoFigura == "cuadrado") {
+        string color = color_fijo;
+        int lado;
+        cout << "lado:";
+        cin >> lado;
+        if (!validarValor(lado)) {
+            cout << "El valor ingresado es incorrecto";
+            return;
+        }
+        Cuadrado nuevo_cuadrado = {x, y, lado, color};
+        cuadrados.push_back(nuevo_cuadrado);
+        system("cls");
+        dibujarFiguras();
+
     }
-    Cuadrado nuevo_cuadrado = {x, y, lado, color};
-    cuadrados.push_back(nuevo_cuadrado);
-    system("cls");
-    dibujarFiguras();
-}
+    if(tipoFigura == "triangulo") {
+        string color = color_fijo;
+        int base;
+        cout << "Base: ";
+        cin >> base;
+        if (!validarValor(base)) {
+            cout << "El valor ingresado es incorrecto";
+            return;
+        }
+        Triangulo nueva_figura = {x, y, base, color};
+        triangulos.push_back(nueva_figura);
+        system("cls");
+        dibujarFiguras();
 
-void insertarCirculo(int x, int y) {
-    string color = color_fijo;
-    int radio;
-    cout << "Diametro circulo: ";
-    cin >> radio;
-    if (!validarValor(radio)) {
-        cout << "El valor ingresado es incorrecto";
-        return;
     }
-    Circulo nueva_figura = {x, y, radio, color};
-    circulos.push_back(nueva_figura);
-    system("cls");
-    dibujarFiguras();
-}
 
-void insertarTriangulo(int x, int y) {
-    string color = color_fijo;
-    int base;
-    cout << "Base del Triangulo: ";
-    cin >> base;
-    if (!validarValor(base)) {
-        cout << "El valor ingresado es incorrecto";
-        return;
+    if(tipoFigura == "circulo") {
+        string color = color_fijo;
+        int radio;
+        cout << "Diametro: ";
+        cin >> radio;
+        if (!validarValor(radio)) {
+            cout << "El valor ingresado es incorrecto";
+            return;
+        }
+        Circulo nueva_figura = {x, y, radio, color};
+        circulos.push_back(nueva_figura);
+        system("cls");
+        dibujarFiguras();
     }
-    Triangulo nueva_figura = {x, y, base, color};
-    triangulos.push_back(nueva_figura);
-    system("cls");
-    dibujarFiguras();
-}
 
+        if(tipoFigura == "rectangulo") {
+        string color = color_fijo;
+        int base;
+        int altura;
+        cout << "base: ";
+        cin >> base;
+        cout << "altura: ";
+        cin >> altura;
+        if (!validarValor(base) || !validarValor(altura) ) {
+            cout << "El valor ingresado es incorrecto";
+            return;
+        }
+        Rectangulo nueva_figura = {x, y, base, altura, color};
+        rectangulos.push_back(nueva_figura);
+        system("cls");
+        dibujarFiguras();
+    }
 
-// funcion para mostrar un menú
-void mostrarMenu(){
-    CONSOLE_SCREEN_BUFFER_INFO info;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &info);
-
-    width = info.dwSize.X;
-    height = info.dwSize.Y;
-
-    int tx = 18;
-    int ty = 1;
-    gotoxy(tx, ty);
-    cout << GREEN << "F1: Cuadrado | F2: Circulo | ESC: Borrar | F5: Rojo | F6: Verde | F7: Amarillo | F8: Blanco";
-}
+    }
 
 
 // funcion para leer las teclas de funcion especiales
 void handleFunctionKey(int key, int x, int y) {
     switch (key) {
-        case 59: // F1
-            insertarCuadrado(x, y);
+        case 59: // F1 //cuadradp
+            tipoFigura = "cuadrado";
+            insertarPosFigura(x, y, tipoFigura);
             break;
         case 60: // F2
-            insertarCirculo(x, y);
+            tipoFigura = "circulo";
+            insertarPosFigura(x, y, tipoFigura);
             break;
         case 61: // F3
-            insertarTriangulo(x, y);
+            tipoFigura = "triangulo";
+            insertarPosFigura(x, y, tipoFigura);
+            break;
+        case 62: // F3
+            tipoFigura = "rectangulo";
+            insertarPosFigura(x, y, tipoFigura);
             break;
         case 27: // Escape
             system("cls");
