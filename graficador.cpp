@@ -83,10 +83,14 @@ void mostrarMenu(){
     width = info.dwSize.X;
     height = info.dwSize.Y;
 
-    int tx = 11;
-    int ty = 1;
+    int tx = 30;
+    int ty = 0;
     gotoxy(tx, ty);
-    cout << GREEN << "F1: Cuadrado | F2: Circulo | F3: Triangulo | ESC: Borrar | F5: Rojo | F6: Verde | F7: Amarillo | F8: Blanco";
+    cout << YELLOW << "W - w : Arriba  | S - s : Abajo | A - a : Izquierda | D - d : Derecha";
+    tx = 5;
+    ty = height -1;
+    gotoxy(tx, ty);
+    cout << GREEN << "F1:Cuadrado | F2:Circulo | F3:Triangulo | F4:Rectangulo | ESC:Borrar | F5:Rojo |F6:Verde| F7:Amarillo | F8:Blanco";
 }
 
 // funcion para vlidar valores incorrectos
