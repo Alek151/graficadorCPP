@@ -279,6 +279,15 @@ void cargarArchivoAvectores(string nombreArchivo) {
     dibujarFiguras();
 }
 
+
+void guardarDatosName() {
+    string nombreArchivo;
+    cout << "Ingrese el nombre del archivo: ";
+    cin >> nombreArchivo;
+
+    guardarDatos(nombreArchivo);
+}
+
 void abrirArchivo() {
     string nombreArchivo;
     cout << "Ingrese el nombre del archivo: ";
@@ -404,10 +413,10 @@ void handleFunctionKey(int key, int x, int y) {
             mostrarMenu();
             break;
         case 103: // g
-            guardarDatos("dibujoCPP.txt");
+            guardarDatosName();
             break;
         case 71: // G
-            guardarDatos("dibujoCPP.txt");
+            guardarDatosName();
             break;
         case 113: // q
             abrirArchivo();
