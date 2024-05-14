@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <conio.h>
 #include <windows.h>
 #include <cmath>
@@ -83,10 +84,10 @@ void mostrarMenu(){
     width = info.dwSize.X;
     height = info.dwSize.Y;
 
-    int tx = 30;
+    int tx = 8;
     int ty = 0;
     gotoxy(tx, ty);
-    cout << YELLOW << "W - w : Arriba  | S - s : Abajo | A - a : Izquierda | D - d : Derecha";
+    cout << YELLOW << "W - w : Arriba  | S - s : Abajo | A - a : Izquierda | D - d : Derecha | G : GuardarDatos | Q : Abrir Archivo";
     tx = 5;
     ty = height -1;
     gotoxy(tx, ty);
@@ -103,6 +104,9 @@ bool validarValor(int valor) {
     }
     return true;
 }
+
+
+//almacenado y cargar un archivo
 
 
 // se inicializan funciones para dibujar las figuras
@@ -194,6 +198,95 @@ void dibujarFiguras() {
         mostrarMenu();
 }
 
+
+void guardarDatos(string nombreArchivo) {
+    ofstream archivo(nombreArchivo);
+
+    // Verifica si se pudo crear el archivo
+    if (!archivo) {
+        cerr << "Error al crear el archivo " << nombreArchivo << endl;
+        return;
+    }
+
+    // Guarda los datos de los vectores en el archivo
+    for (const auto& cuadrado : cuadrados) {
+        archivo << "Cuadrado " << cuadrado.x << " " << cuadrado.y << " " << cuadrado.lado << " " << cuadrado.color << endl;
+    }
+
+    for (const auto& circulo : circulos) {
+        archivo << "Circulo " << circulo.x << " " << circulo.y << " " << circulo.radio << " " << circulo.color << endl;
+    }
+
+    for (const auto& triangulo : triangulos) {
+        archivo << "Triangulo " << triangulo.x << " " << triangulo.y << " " << triangulo.base << " " << triangulo.color << endl;
+    }
+
+    for (const auto& rectangulo : rectangulos) {
+        archivo << "Rectangulo " << rectangulo.x << " " << rectangulo.y << " " << rectangulo.base << " " << rectangulo.altura << " " << rectangulo.color << endl;
+    }
+
+    // Cierra el archivo
+    archivo.close();
+
+    cout << "Datos guardados en el archivo " << nombreArchivo << endl;
+            Sleep(2000);
+            system("cls");
+            dibujarFiguras();
+}
+
+
+// Función para abrir un archivo y obtener los datos
+void cargarArchivoAvectores(string nombreArchivo) {
+    ifstream archivo(nombreArchivo);
+
+    // Verifica si se pudo abrir el archivo
+    if (!archivo.is_open()) {
+        cerr << "Error al abrir el archivo " << nombreArchivo << endl;
+        return;
+    }
+
+    // Variables temporales para almacenar los datos mientras se leen del archivo
+    string tipo;
+    int x, y, base, altura, lado, radio;
+    string color;
+
+    // Lee la información del archivo y almacena los datos en los vectores
+    while (archivo >> tipo) {
+        if (tipo == "Cuadrado") {
+            archivo >> x >> y >> lado >> color;
+            Cuadrado cuadrado = {x, y, lado, color};
+            cuadrados.push_back(cuadrado);
+        } else if (tipo == "Circulo") {
+            archivo >> x >> y >> radio >> color;
+            Circulo circulo = {x, y, radio, color};
+            circulos.push_back(circulo);
+        } else if (tipo == "Triangulo") {
+            archivo >> x >> y >> base >> color;
+            Triangulo triangulo = {x, y, base, color};
+            triangulos.push_back(triangulo);
+        } else if (tipo == "Rectangulo") {
+            archivo >> x >> y >> base >> altura >> color;
+            Rectangulo rectangulo = {x, y, base, altura, color};
+            rectangulos.push_back(rectangulo);
+        }
+    }
+
+    archivo.close();
+
+    cout << "Obteniendo figuras y creandolas" << nombreArchivo << endl;
+            Sleep(2000);
+            system("cls");
+    dibujarFiguras();
+}
+
+void abrirArchivo() {
+    string nombreArchivo;
+    cout << "Ingrese el nombre del archivo: ";
+    cin >> nombreArchivo;
+
+    cargarArchivoAvectores(nombreArchivo);
+}
+
 // funcion para insertar figuras en los vectores
 
 void insertarPosFigura(int x, int y, string tipoFigura){
@@ -280,7 +373,7 @@ void handleFunctionKey(int key, int x, int y) {
             tipoFigura = "triangulo";
             insertarPosFigura(x, y, tipoFigura);
             break;
-        case 62: // F3
+        case 62: // F4
             tipoFigura = "rectangulo";
             insertarPosFigura(x, y, tipoFigura);
             break;
@@ -310,6 +403,19 @@ void handleFunctionKey(int key, int x, int y) {
         case 68: // F10
             mostrarMenu();
             break;
+        case 103: // g
+            guardarDatos("dibujoCPP.txt");
+            break;
+        case 71: // G
+            guardarDatos("dibujoCPP.txt");
+            break;
+        case 113: // q
+            abrirArchivo();
+            break;
+        case 81: // Q
+            abrirArchivo();
+            break;
+
     }
 }
 
