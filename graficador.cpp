@@ -48,6 +48,17 @@ struct Rectangulo {
     string color;
 };
 
+
+struct Linea {
+    int x;
+    int y;
+    int longitud;
+    int direccion;
+    string color;
+};
+
+
+
 // se fija un color inicial
 string color_fijo = WHITE;
 
@@ -56,7 +67,7 @@ vector<Cuadrado> cuadrados;
 vector<Circulo> circulos;
 vector<Triangulo> triangulos;
 vector<Rectangulo> rectangulos;
-
+vector<Linea> lineas;
 
 // se implementa funcion para dispositivos que tengan la tecla fn
 bool fn_mode = false;
@@ -84,14 +95,17 @@ void mostrarMenu(){
     width = info.dwSize.X;
     height = info.dwSize.Y;
 
-    int tx = 8;
+    int tx = 18;
     int ty = 0;
     gotoxy(tx, ty);
-    cout << YELLOW << "W - w : Arriba  | S - s : Abajo | A - a : Izquierda | D - d : Derecha | G : GuardarDatos | Q : Abrir Archivo";
-    tx = 5;
+    cout << YELLOW << "W/w: Arriba | S/s: Abajo | A/a: Izquierda | D/d: Derecha | G: Guardar | Q: Abrir";
+    tx = 4;
+    ty = height -2;
+    gotoxy(tx, ty);
+    cout << GREEN << "F1:Cuadrado | F2:Circulo | F3:Triangulo | F4:Rectangulo | ESC:Limpiar | F5:Rojo | F6:Verde | F7:Amarillo | F8:Blanco";
     ty = height -1;
     gotoxy(tx, ty);
-    cout << GREEN << "F1:Cuadrado | F2:Circulo | F3:Triangulo | F4:Rectangulo | ESC:Borrar | F5:Rojo |F6:Verde| F7:Amarillo | F8:Blanco";
+    cout << GREEN << "F9:Linea";
 }
 
 // funcion para vlidar valores incorrectos
@@ -99,7 +113,9 @@ bool validarValor(int valor) {
     if (cin.fail() || valor <= 0) {
         cin.clear();
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        cout << "Por favor, ingrese un numero entero positivo v�lido." << endl;
+        cout << "Por favor, ingrese un numero entero positivo valido." << endl;
+        Sleep(2000);
+            system("cls");
         return false;
     }
     return true;
@@ -107,7 +123,31 @@ bool validarValor(int valor) {
 
 
 //almacenado y cargar un archivo
+void dibujarLinea(int x, int y, int longitud, int direccion, const string& color) {
 
+    // Dibujar la línea según la dirección
+    for (int i = 0; i < longitud; ++i) {
+        gotoxy(x, y);
+        cout << color << "*";
+        if (direccion == 1) {
+            y--; // Arriba
+        } else if (direccion == 2) {
+            y++; // Abajo
+        } else if (direccion == 3) {
+            x--; // Izquierda
+        } else if (direccion == 4) {
+            x++; // Derecha
+        } else if (direccion == 5) {
+            x++;
+            y++; // Diagonal
+        } else {
+            cout << "Dirección no válida.";
+        Sleep(2000);
+            system("cls");
+            return;
+        }
+    }
+}
 
 // se inicializan funciones para dibujar las figuras
 void dibujarCuadrado(int x, int y, int lado, const string& color) {
@@ -195,6 +235,10 @@ void dibujarFiguras() {
     for (const auto& figura : rectangulos) {
         dibujarContornoRectangulo(figura.x, figura.y, figura.base, figura.altura, figura.color);
     }
+
+    for (const auto& figura : lineas) {
+        dibujarLinea(figura.x, figura.y, figura.longitud, figura.direccion, figura.color);
+    }
         mostrarMenu();
 }
 
@@ -205,6 +249,8 @@ void guardarDatos(string nombreArchivo) {
     // Verifica si se pudo crear el archivo
     if (!archivo) {
         cerr << "Error al crear el archivo " << nombreArchivo << endl;
+        Sleep(2000);
+            system("cls");
         return;
     }
 
@@ -224,6 +270,10 @@ void guardarDatos(string nombreArchivo) {
     for (const auto& rectangulo : rectangulos) {
         archivo << "Rectangulo " << rectangulo.x << " " << rectangulo.y << " " << rectangulo.base << " " << rectangulo.altura << " " << rectangulo.color << endl;
     }
+        for (const auto& linea : lineas) {
+        archivo << "Linea " << linea.x << " " << linea.y << " " << linea.longitud << " " << linea.direccion << " " << linea.color << endl;
+    }
+
 
     // Cierra el archivo
     archivo.close();
@@ -242,12 +292,14 @@ void cargarArchivoAvectores(string nombreArchivo) {
     // Verifica si se pudo abrir el archivo
     if (!archivo.is_open()) {
         cerr << "Error al abrir el archivo " << nombreArchivo << endl;
+                Sleep(2000);
+            system("cls");
         return;
     }
 
     // Variables temporales para almacenar los datos mientras se leen del archivo
     string tipo;
-    int x, y, base, altura, lado, radio;
+    int x, y, base, altura, lado, radio, longitud, direccion;
     string color;
 
     // Lee la información del archivo y almacena los datos en los vectores
@@ -268,6 +320,10 @@ void cargarArchivoAvectores(string nombreArchivo) {
             archivo >> x >> y >> base >> altura >> color;
             Rectangulo rectangulo = {x, y, base, altura, color};
             rectangulos.push_back(rectangulo);
+        }else if (tipo == "Linea") {
+            archivo >> x >> y >> longitud >> direccion >> color;
+            Linea linea = {x, y, longitud, direccion, color};
+            lineas.push_back(linea);
         }
     }
 
@@ -288,10 +344,33 @@ void guardarDatosName() {
     guardarDatos(nombreArchivo);
 }
 
+// Función para limpiar los vectores de figuras
+void limpiarVectores() {
+    cuadrados.clear();
+    circulos.clear();
+    triangulos.clear();
+    rectangulos.clear();
+    lineas.clear();
+    cout << "Vectores limpiados." << endl;
+}
+
 void abrirArchivo() {
     string nombreArchivo;
     cout << "Ingrese el nombre del archivo: ";
     cin >> nombreArchivo;
+
+    if (!cuadrados.empty() || !circulos.empty() || !triangulos.empty() || !rectangulos.empty()) {
+        char opcion;
+        cout << "Si cargas el archivo, se perdera el contenido actual, quieres cancelar S/N";
+        cin >> opcion;
+
+        if (toupper(opcion) == 'N') {
+            cout << "Operación cancelada." << endl;
+            return;
+        } else {
+            limpiarVectores(); // Limpiar vectores si el usuario elige sobrescribir
+        }
+    }
 
     cargarArchivoAvectores(nombreArchivo);
 }
@@ -363,6 +442,27 @@ void insertarPosFigura(int x, int y, string tipoFigura){
         system("cls");
         dibujarFiguras();
     }
+    if(tipoFigura == "linea"){
+        string color = color_fijo;
+        int longitud;
+        int direccion;
+
+        cout << "Ingrese la longitud de la línea: ";
+        cin >> longitud;
+        if (!validarValor(longitud)) {
+            cout << "Longitud inválida." << endl;
+            Sleep(2000);
+            system("cls");
+            return;
+        }
+
+        cout << "Direccion: 1. arriba 2. abajo 3. izquierda 2. derecha. 5 diagonal";
+        cin >> direccion;
+        Linea nueva_linea = {x, y, longitud, direccion, color};
+        lineas.push_back(nueva_linea);
+        system("cls");
+        dibujarFiguras();
+        }
 
     }
 
@@ -408,6 +508,9 @@ void handleFunctionKey(int key, int x, int y) {
             break;
         case 66: // F8
             color_fijo = WHITE;
+        case 67:
+            tipoFigura = "linea";
+            insertarPosFigura(x, y, tipoFigura);
             break;
         case 68: // F10
             mostrarMenu();
