@@ -5,6 +5,8 @@
 #include <cmath>
 #include <vector>
 #include <limits>
+
+
 //se agregan librerias necesarias para la realización del proyecto
 
 using namespace std;
@@ -24,6 +26,7 @@ struct Cuadrado {
     int y;
     int lado;
     string color;
+    string caracter_escritura;
 };
 
 struct Circulo {
@@ -31,6 +34,7 @@ struct Circulo {
     int y;
     int radio;
     string color;
+    string caracter_escritura;
 };
 
 struct Triangulo {
@@ -38,6 +42,7 @@ struct Triangulo {
     int y;
     int base;
     string color;
+    string caracter_escritura;
 };
 
 struct Rectangulo {
@@ -46,6 +51,7 @@ struct Rectangulo {
     int base;
     int altura;
     string color;
+    string caracter_escritura;
 };
 
 
@@ -55,12 +61,23 @@ struct Linea {
     int longitud;
     int direccion;
     string color;
+    string caracter_escritura;
+};
+
+struct Rombo {
+    int x;
+    int y;
+    int dMayor; // Diagonal mayor
+    int dMenor; // Diagonal menor
+    string color;
+    string caracter_escritura;
 };
 
 
 
 // se fija un color inicial
 string color_fijo = WHITE;
+string caracter_fijado = "*";
 
 // se inicializan los vectores
 vector<Cuadrado> cuadrados;
@@ -68,6 +85,8 @@ vector<Circulo> circulos;
 vector<Triangulo> triangulos;
 vector<Rectangulo> rectangulos;
 vector<Linea> lineas;
+vector<Rombo> rombos;
+
 
 // se implementa funcion para dispositivos que tengan la tecla fn
 bool fn_mode = false;
@@ -95,17 +114,14 @@ void mostrarMenu(){
     width = info.dwSize.X;
     height = info.dwSize.Y;
 
-    int tx = 18;
+    int tx = 13;
     int ty = 0;
     gotoxy(tx, ty);
-    cout << YELLOW << "W/w: Arriba | S/s: Abajo | A/a: Izquierda | D/d: Derecha | G: Guardar | Q: Abrir";
-    tx = 4;
-    ty = height -2;
-    gotoxy(tx, ty);
-    cout << GREEN << "F1:Cuadrado | F2:Circulo | F3:Triangulo | F4:Rectangulo | ESC:Limpiar | F5:Rojo | F6:Verde | F7:Amarillo | F8:Blanco";
+    cout << YELLOW << "  Arriba (^), Abajo (v), Izquierda (<), Derecha (>) | ctrl + A: Abrir | ctrl + G: Guardar";
+    tx = 2;
     ty = height -1;
     gotoxy(tx, ty);
-    cout << GREEN << "F9:Linea";
+    cout << GREEN << "F1:Circulo | F2:Cuadrado | F3:Rectangulo | F4:Circulo | F5:Linea | F6: Rombo | F7:  | F8: Nuevo Caracter | F9: limpiar";
 }
 
 // funcion para vlidar valores incorrectos
@@ -121,14 +137,35 @@ bool validarValor(int valor) {
     return true;
 }
 
+void dibujarRombo(int x, int y, int dMayor, int dMenor, const string& color, const string& caracter_escritura) {
+  int h = dMayor / 2; // Mitad de la diagonal mayor (altura máxima del rombo)
+  int w = dMenor / 2; // Mitad de la diagonal menor (ancho máximo del rombo)
 
+  // Parte superior del rombo
+  for (int i = 0; i <= h; ++i) {
+    int dx = abs(h - i) * w / h;
+    gotoxy((x - dx + width) % width, (y - i + height) % height);
+    cout << color << caracter_escritura;
+    gotoxy((x + dx + width) % width, (y - i + height) % height);
+    cout << color << caracter_escritura;
+  }
+
+  // Parte inferior del rombo
+  for (int i = 1; i <= h; ++i) {
+    int dx = abs(h - i) * w / h;
+    gotoxy((x - dx + width) % width, (y + i + height) % height);
+    cout << color << caracter_escritura;
+    gotoxy((x + dx + width) % width, (y + i + height) % height);
+    cout << color << caracter_escritura;
+  }
+}
 //almacenado y cargar un archivo
-void dibujarLinea(int x, int y, int longitud, int direccion, const string& color) {
+void dibujarLinea(int x, int y, int longitud, int direccion, const string& color, const string& caracter_escritura) {
 
     // Dibujar la línea según la dirección
     for (int i = 0; i < longitud; ++i) {
         gotoxy(x, y);
-        cout << color << "*";
+        cout << color << caracter_escritura;
         if (direccion == 1) {
             y--; // Arriba
         } else if (direccion == 2) {
@@ -150,21 +187,21 @@ void dibujarLinea(int x, int y, int longitud, int direccion, const string& color
 }
 
 // se inicializan funciones para dibujar las figuras
-void dibujarCuadrado(int x, int y, int lado, const string& color) {
+void dibujarCuadrado(int x, int y, int lado, const string& color, const string& caracter_escritura) {
     for (int i = 0; i < lado; i++) {
         for (int j = 0; j < lado; j++) {
             if (i == 0 || i == lado - 1 || j == 0 || j == lado - 1){
                 int px = (x + j * 2) % width;
                 int py = (y + i) % height;
                 gotoxy(px, py);
-                cout << color << "*";
+                cout << color << caracter_escritura;
             }
         }
         cout << endl;
     }
 }
 
-void dibujarCirculo(int x, int y, int radio, const string& color) {
+void dibujarCirculo(int x, int y, int radio, const string& color, const string& caracter_escritura) {
     for (int i = 0; i <= radio * 2; ++i) {
         for (int j = 0; j <= radio * 2; ++j) {
             int dx = j - radio;
@@ -175,43 +212,43 @@ void dibujarCirculo(int x, int y, int radio, const string& color) {
                 int py = (y + i) % height;
 
                 gotoxy(px, py);
-                cout << color << "*";
+                cout << color << caracter_escritura;
             }
         }
     }
 }
 
-void dibujarTriangulo(int x, int y, int base, const string& color) {
+void dibujarTriangulo(int x, int y, int base, const string& color, const string& caracter_escritura) {
     int altura = int(0.866 * base);
 
     for (int i = 0; i <= altura; ++i) {
         gotoxy(x - i, y + i);
-        cout << color << "*";
+        cout << color << caracter_escritura;
         gotoxy(x + i, y + i);
-        cout << color << "*";
+        cout << color << caracter_escritura;
     }
 
     for (int i = 0; i < base; ++i) {
         int validacion = base % 2;
         if(validacion == 1){ // Verificar si la base es impar
             gotoxy(x - altura + i * 2, y + altura);
-            cout << color << "*";
+            cout << color << caracter_escritura;
         } else { // Si la base es par
             if (i % 2 == 0 || i == base + 1) { // Imprimir solo cada segundo asterisco y el último
                 gotoxy(x - altura + i, y + altura);
-                cout << color << "*";
+                cout << color << caracter_escritura;
             }
         }
     }
 }
 
-void dibujarContornoRectangulo(int x, int y, int base, int altura, const string& color) {
+void dibujarContornoRectangulo(int x, int y, int base, int altura, const string& color, const string& caracter_escritura) {
     for (int i = 0; i < altura; ++i) {
         for (int j = 0; j < base; ++j) {
             // Dibuja solo el contorno: superior, inferior, izquierdo, derecho
             if (i == 0 || i == altura - 1 || j == 0 || j == base - 1) {
                 gotoxy(x + j, y + i);
-                std::cout << color << "*";
+                std::cout << color << caracter_escritura;
             }
         }
     }
@@ -221,23 +258,27 @@ void dibujarContornoRectangulo(int x, int y, int base, int altura, const string&
 
 void dibujarFiguras() {
     for (const auto& figura : cuadrados) {
-        dibujarCuadrado(figura.x, figura.y, figura.lado, figura.color);
+        dibujarCuadrado(figura.x, figura.y, figura.lado, figura.color, figura.caracter_escritura);
     }
 
     for (const auto& figura : circulos) {
-        dibujarCirculo(figura.x, figura.y, figura.radio, figura.color);
+        dibujarCirculo(figura.x, figura.y, figura.radio, figura.color, figura.caracter_escritura);
     }
 
     for (const auto& figura : triangulos) {
-        dibujarTriangulo(figura.x, figura.y, figura.base, figura.color);
+        dibujarTriangulo(figura.x, figura.y, figura.base, figura.color, figura.caracter_escritura);
     }
 
     for (const auto& figura : rectangulos) {
-        dibujarContornoRectangulo(figura.x, figura.y, figura.base, figura.altura, figura.color);
+        dibujarContornoRectangulo(figura.x, figura.y, figura.base, figura.altura, figura.color, figura.caracter_escritura);
     }
 
     for (const auto& figura : lineas) {
-        dibujarLinea(figura.x, figura.y, figura.longitud, figura.direccion, figura.color);
+        dibujarLinea(figura.x, figura.y, figura.longitud, figura.direccion, figura.color, figura.caracter_escritura);
+    }
+
+     for (const auto& figura : rombos) {
+        dibujarRombo(figura.x, figura.y, figura.dMayor, figura.dMenor, figura.color, figura.caracter_escritura);
     }
         mostrarMenu();
 }
@@ -256,24 +297,27 @@ void guardarDatos(string nombreArchivo) {
 
     // Guarda los datos de los vectores en el archivo
     for (const auto& cuadrado : cuadrados) {
-        archivo << "Cuadrado " << cuadrado.x << " " << cuadrado.y << " " << cuadrado.lado << " " << cuadrado.color << endl;
+        archivo << "Cuadrado " << cuadrado.x << " " << cuadrado.y << " " << cuadrado.lado << " " << cuadrado.color << " " << cuadrado.caracter_escritura <<endl;
     }
 
     for (const auto& circulo : circulos) {
-        archivo << "Circulo " << circulo.x << " " << circulo.y << " " << circulo.radio << " " << circulo.color << endl;
+        archivo << "Circulo " << circulo.x << " " << circulo.y << " " << circulo.radio << " " << circulo.color << " " << circulo.caracter_escritura <<endl;
     }
 
     for (const auto& triangulo : triangulos) {
-        archivo << "Triangulo " << triangulo.x << " " << triangulo.y << " " << triangulo.base << " " << triangulo.color << endl;
+        archivo << "Triangulo " << triangulo.x << " " << triangulo.y << " " << triangulo.base << " " << triangulo.color << " " << triangulo.caracter_escritura <<endl;
     }
 
     for (const auto& rectangulo : rectangulos) {
-        archivo << "Rectangulo " << rectangulo.x << " " << rectangulo.y << " " << rectangulo.base << " " << rectangulo.altura << " " << rectangulo.color << endl;
+        archivo << "Rectangulo " << rectangulo.x << " " << rectangulo.y << " " << rectangulo.base << " " << rectangulo.altura << " " << rectangulo.color <<" " << rectangulo.caracter_escritura << endl;
     }
         for (const auto& linea : lineas) {
-        archivo << "Linea " << linea.x << " " << linea.y << " " << linea.longitud << " " << linea.direccion << " " << linea.color << endl;
+        archivo << "Linea " << linea.x << " " << linea.y << " " << linea.longitud << " " << linea.direccion << " " << linea.color << " " << linea.caracter_escritura <<endl;
     }
 
+     for (const auto& rombo : rombos) {
+        archivo << "Rombo " << rombo.x << " " << rombo.y << " " << rombo.dMayor << " " << rombo.dMenor << " " << rombo.color << " " << rombo.caracter_escritura <<endl;
+    }
 
     // Cierra el archivo
     archivo.close();
@@ -299,31 +343,36 @@ void cargarArchivoAvectores(string nombreArchivo) {
 
     // Variables temporales para almacenar los datos mientras se leen del archivo
     string tipo;
-    int x, y, base, altura, lado, radio, longitud, direccion;
+    int x, y, base, altura, lado, radio, longitud, direccion, dMayor, dMenor;
     string color;
+    string caracter_escritura;
 
     // Lee la información del archivo y almacena los datos en los vectores
     while (archivo >> tipo) {
         if (tipo == "Cuadrado") {
-            archivo >> x >> y >> lado >> color;
-            Cuadrado cuadrado = {x, y, lado, color};
+            archivo >> x >> y >> lado >> color >> caracter_escritura;
+            Cuadrado cuadrado = {x, y, lado, color, caracter_escritura};
             cuadrados.push_back(cuadrado);
         } else if (tipo == "Circulo") {
             archivo >> x >> y >> radio >> color;
-            Circulo circulo = {x, y, radio, color};
+            Circulo circulo = {x, y, radio, color, caracter_escritura};
             circulos.push_back(circulo);
         } else if (tipo == "Triangulo") {
-            archivo >> x >> y >> base >> color;
-            Triangulo triangulo = {x, y, base, color};
+            archivo >> x >> y >> base >> color >> caracter_escritura;
+            Triangulo triangulo = {x, y, base, color, caracter_escritura};
             triangulos.push_back(triangulo);
         } else if (tipo == "Rectangulo") {
-            archivo >> x >> y >> base >> altura >> color;
-            Rectangulo rectangulo = {x, y, base, altura, color};
+            archivo >> x >> y >> base >> altura >> color >> caracter_escritura;
+            Rectangulo rectangulo = {x, y, base, altura, color, caracter_escritura};
             rectangulos.push_back(rectangulo);
         }else if (tipo == "Linea") {
-            archivo >> x >> y >> longitud >> direccion >> color;
-            Linea linea = {x, y, longitud, direccion, color};
+            archivo >> x >> y >> longitud >> direccion >> color >> caracter_escritura;
+            Linea linea = {x, y, longitud, direccion, color, caracter_escritura};
             lineas.push_back(linea);
+        }else if (tipo == "Rombo") {
+            archivo >> x >> y >> dMayor >> dMenor >> color >> caracter_escritura;
+            Rombo rombo = {x, y, dMayor, dMenor, color, caracter_escritura};
+            rombos.push_back(rombo);
         }
     }
 
@@ -381,6 +430,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
 
     if(tipoFigura == "cuadrado") {
         string color = color_fijo;
+        string caracter_escritura = caracter_fijado;
         int lado;
         cout << "lado:";
         cin >> lado;
@@ -388,7 +438,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
             cout << "El valor ingresado es incorrecto";
             return;
         }
-        Cuadrado nuevo_cuadrado = {x, y, lado, color};
+        Cuadrado nuevo_cuadrado = {x, y, lado, color, caracter_escritura};
         cuadrados.push_back(nuevo_cuadrado);
         system("cls");
         dibujarFiguras();
@@ -396,6 +446,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
     }
     if(tipoFigura == "triangulo") {
         string color = color_fijo;
+        string caracter_escritura = caracter_fijado;
         int base;
         cout << "Base: ";
         cin >> base;
@@ -403,7 +454,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
             cout << "El valor ingresado es incorrecto";
             return;
         }
-        Triangulo nueva_figura = {x, y, base, color};
+        Triangulo nueva_figura = {x, y, base, color, caracter_escritura};
         triangulos.push_back(nueva_figura);
         system("cls");
         dibujarFiguras();
@@ -412,6 +463,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
 
     if(tipoFigura == "circulo") {
         string color = color_fijo;
+        string caracter_escritura = caracter_fijado;
         int radio;
         cout << "Diametro: ";
         cin >> radio;
@@ -419,7 +471,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
             cout << "El valor ingresado es incorrecto";
             return;
         }
-        Circulo nueva_figura = {x, y, radio, color};
+        Circulo nueva_figura = {x, y, radio, color, caracter_escritura};
         circulos.push_back(nueva_figura);
         system("cls");
         dibujarFiguras();
@@ -427,6 +479,7 @@ void insertarPosFigura(int x, int y, string tipoFigura){
 
         if(tipoFigura == "rectangulo") {
         string color = color_fijo;
+        string caracter_escritura = caracter_fijado;
         int base;
         int altura;
         cout << "base: ";
@@ -437,13 +490,14 @@ void insertarPosFigura(int x, int y, string tipoFigura){
             cout << "El valor ingresado es incorrecto";
             return;
         }
-        Rectangulo nueva_figura = {x, y, base, altura, color};
+        Rectangulo nueva_figura = {x, y, base, altura, color, caracter_escritura};
         rectangulos.push_back(nueva_figura);
         system("cls");
         dibujarFiguras();
     }
     if(tipoFigura == "linea"){
         string color = color_fijo;
+        string caracter_escritura = caracter_fijado;
         int longitud;
         int direccion;
 
@@ -456,13 +510,40 @@ void insertarPosFigura(int x, int y, string tipoFigura){
             return;
         }
 
-        cout << "Direccion: 1. arriba 2. abajo 3. izquierda 2. derecha. 5 diagonal";
+        cout << "Direccion: 1. arriba  "<< endl << "2. abajo "<< endl << " 3. izquierda  "<< endl << " 2. derecha. "<< endl << " 5 diagonal";
         cin >> direccion;
-        Linea nueva_linea = {x, y, longitud, direccion, color};
+        Linea nueva_linea = {x, y, longitud, direccion, color, caracter_escritura};
         lineas.push_back(nueva_linea);
         system("cls");
         dibujarFiguras();
+        } else if (tipoFigura == "rombo") {
+            int dMayor, dMenor;
+            string color = color_fijo;
+            string caracter_escritura = caracter_fijado;
+            cout << "Ingrese la diagonal mayor del rombo: ";
+            cin >> dMayor;
+            validarValor(dMayor);
+            cout << "Ingrese la diagonal menor del rombo: ";
+            cin >> dMenor;
+            validarValor(dMenor);
+            Rombo rombo = {x, y, dMayor, dMenor, color, caracter_escritura};
+            rombos.push_back(rombo);
+            system("cls");
+            dibujarFiguras();
         }
+
+    }
+
+
+    void cambiarCarcterEscritura(){
+
+        cout<< "Escribe el nuevo caracter:" << endl;
+        cin>>caracter_fijado;
+        cout<< "Se ha seteado el caracter: " << caracter_fijado << endl;
+        Sleep(2000);
+        system("cls");
+        dibujarFiguras();
+        return;
 
     }
 
@@ -471,22 +552,36 @@ void insertarPosFigura(int x, int y, string tipoFigura){
 void handleFunctionKey(int key, int x, int y) {
     switch (key) {
         case 59: // F1 //cuadradp
-            tipoFigura = "cuadrado";
-            insertarPosFigura(x, y, tipoFigura);
-            break;
-        case 60: // F2
-            tipoFigura = "circulo";
-            insertarPosFigura(x, y, tipoFigura);
-            break;
-        case 61: // F3
             tipoFigura = "triangulo";
             insertarPosFigura(x, y, tipoFigura);
             break;
-        case 62: // F4
+        case 60: // F2
+            tipoFigura = "cuadrado";
+            insertarPosFigura(x, y, tipoFigura);
+            break;
+        case 61: // F3
             tipoFigura = "rectangulo";
             insertarPosFigura(x, y, tipoFigura);
             break;
-        case 27: // Escape
+        case 62: // F4
+            tipoFigura = "circulo";
+            insertarPosFigura(x, y, tipoFigura);
+            break;
+        case 63: // F5
+            tipoFigura = "linea";
+            insertarPosFigura(x, y, tipoFigura);
+            break;
+        case 64: // F6
+            tipoFigura = "rombo";
+            insertarPosFigura(x, y, tipoFigura);
+            break;
+        case 65: // F7
+            color_fijo = YELLOW;
+            break;
+        case 66:
+            cambiarCarcterEscritura();
+            break;
+        case 67:
             system("cls");
             cuadrados.clear();
             circulos.clear();
@@ -495,38 +590,24 @@ void handleFunctionKey(int key, int x, int y) {
             cout << RED <<"Limpiando Pantalla" << endl;
             Sleep(2000);
             system("cls");
-               mostrarMenu();
-            break;
-        case 63: // F5
-            color_fijo = RED;
-            break;
-        case 64: // F6
-            color_fijo = GREEN;
-            break;
-        case 65: // F7
-            color_fijo = YELLOW;
-            break;
-        case 66: // F8
-            color_fijo = WHITE;
-        case 67:
-            tipoFigura = "linea";
-            insertarPosFigura(x, y, tipoFigura);
-            break;
-        case 68: // F10
             mostrarMenu();
             break;
-        case 103: // g
+        case 69: // F10
+            mostrarMenu();
+            break;
+        case 134: // ctrl + A
             guardarDatosName();
             break;
-        case 71: // G
+        case 7: // ctrl + A
             guardarDatosName();
             break;
-        case 113: // q
+        case 1: // ctrl
             abrirArchivo();
             break;
         case 81: // Q
             abrirArchivo();
             break;
+
 
     }
 }
@@ -556,36 +637,25 @@ int main() {
             } else {
                 handleFunctionKey(key, x, y);
                 switch (key) {
-                    case 'w':
+                    case 72: // Flecha hacia arriba
                         y = (y - 1 + height) % height;
                         break;
-                    case 's':
+                    case 80: // Flecha hacia abajo
                         y = (y + 1) % height;
                         break;
-                    case 'a':
+                    case 75: // Flecha hacia la izquierda
                         x = (x - 1 + width) % width;
                         break;
-                    case 'd':
+                    case 77: // Flecha hacia la derecha
                         x = (x + 1) % width;
                         break;
-                      case 'W':
-                        y = (y - 1 + height) % height;
-                        break;
-                    case 'S':
-                        y = (y + 1) % height;
-                        break;
-                    case 'A':
-                        x = (x - 1 + width) % width;
-                        break;
-                    case 'D':
-                        x = (x + 1) % width;
-                        break;
+
                 }
                 gotoxy(x, y);
                 cout << "";
             }
         }
-        Sleep(100);
+        Sleep(10);
 
     }
 }
