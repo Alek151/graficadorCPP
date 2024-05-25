@@ -1,12 +1,16 @@
 # Manual Técnico
 
+## Introducción
+
+El manual técnico proporciona una descripción detallada de la estructura del código y las funciones implementadas en el programa para dibujar figuras geométricas en la consola de Windows. Este manual está diseñado para desarrolladores y personas interesadas en comprender el funcionamiento interno del programa.
+
 ## Estructura del Código
 
-El código está organizado en varias secciones principales:
+El código fuente del programa está organizado de manera lógica y modular, lo que facilita su comprensión y mantenimiento. Se divide en varias secciones principales:
 
-1. **Librerías Incluidas**: El programa incluye varias librerías estándar de C++ para manejar entrada y salida, manipulación de archivos y funciones específicas de la consola de Windows.
+1. **Librerías Incluidas**: Se incluyen las librerías estándar de C++ necesarias para la funcionalidad del programa, como entrada y salida, manipulación de archivos y funciones específicas de la consola de Windows.
 
-2. **Definición de Colores y Estructuras de Datos**: Se definen los colores utilizados para dibujar las figuras y se declaran las estructuras de datos para representar las diferentes figuras geométricas, como cuadrados, círculos, triángulos, etc.
+2. **Definición de Colores y Estructuras de Datos**: En esta sección se definen los colores utilizados para dibujar las figuras y se declaran las estructuras de datos que representan cada tipo de figura geométrica, como cuadrados, círculos, triángulos, etc.
 
 3. **Funciones de Dibujo de Figuras**: Se implementan funciones para dibujar cada tipo de figura geométrica en la consola de Windows. Estas funciones utilizan la función `gotoxy` para posicionar el cursor en la consola y escribir los caracteres correspondientes.
 
