@@ -16,6 +16,7 @@ El programa permite dibujar diversas figuras geométricas en la consola de Windo
 - Rectángulos
 - Líneas
 - Rombos
+- Hexagonos
 
 Además, puedes realizar las siguientes acciones:
 
