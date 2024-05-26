@@ -45,6 +45,7 @@ Para dibujar una figura, selecciona una de las teclas de función asignadas a ca
 - F4: Círculo
 - F5: Línea
 - F6: Rombo
+- F7: Hexagono
 
 Una vez seleccionada la tecla de función correspondiente a la figura que deseas dibujar, colócate en la posición deseada en el área de dibujo y presiona la tecla.
 
