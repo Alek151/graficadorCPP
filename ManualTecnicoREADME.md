@@ -2,7 +2,7 @@
 
 ## Introducción
 
-El manual técnico proporciona una descripción detallada de la estructura del código y las funciones implementadas en el programa para dibujar figuras geométricas en la consola de Windows. Este manual está diseñado para desarrolladores y personas interesadas en comprender el funcionamiento interno del programa.
+Manual técnico. Este manual está diseñado para desarrolladores y personas interesadas en comprender el funcionamiento interno del programa.
 
 ## Estructura del Código
 
